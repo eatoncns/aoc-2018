@@ -3,40 +3,74 @@
 
 using namespace std;
 
-void Checksum::add(const string& boxId) {
-  string sortedId(boxId);
-  sort(sortedId.begin(), sortedId.end());
-  char currentLetter = sortedId[0];
-  int seen = 0;
-  bool seenTwo = false;
-  bool seenThree = false;
-  for(char letter : sortedId) {
-    if (letter == currentLetter) {
-      seen += 1;
-    }
-    else {
+namespace {
+  class IdCheck {
+  private:
+    int seen = 0;
+    bool seenTwo = false;
+    bool seenThree = false;
+    char currentLetter;
+    string sortedId;
+
+    void recordOldLetter() {
       if (!seenTwo && seen == 2) {
-        exactlyTwo++;
         seenTwo = true;
       }
       if (!seenThree && seen == 3) {
-        exactlyThree++;
         seenThree = true;
       }
-      if (seenTwo && seenThree) {
-        break;
-      }
+    }
+
+    void resetForNewLetter(char letter) {
       currentLetter = letter;
       seen = 1;
     }
-  }
-  if (!seenTwo && seen == 2) {
+
+    bool searchFinished() {
+      return seenTwo && seenThree;
+    }
+
+  public:
+    IdCheck(const string& inputBoxId) : sortedId(inputBoxId) {
+      sort(sortedId.begin(), sortedId.end());
+      currentLetter = sortedId[0];
+    }
+
+    void run() {
+      for(char letter : sortedId) {
+        if (letter == currentLetter) {
+          seen += 1;
+        }
+        else {
+          recordOldLetter();
+          if (searchFinished()) {
+            return;
+          }
+          resetForNewLetter(letter);
+        }
+      }
+      recordOldLetter();
+    }
+
+    bool hasExactlyTwo() {
+      return seenTwo;
+    }
+
+    bool hasExactlyThree() {
+      return seenThree;
+    }
+  };
+}
+
+void Checksum::add(const string& boxId) {
+  string sortedId(boxId);
+  IdCheck idCheck(sortedId);
+  idCheck.run();
+  if (idCheck.hasExactlyTwo()) {
     exactlyTwo++;
-    seenTwo = true;
   }
-  if (!seenThree && seen == 3) {
+  if(idCheck.hasExactlyThree()) {
     exactlyThree++;
-    seenThree = true;
   }
 }
 
