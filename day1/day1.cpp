@@ -14,7 +14,7 @@ int partOne(istream& input) {
 }
 
 int partTwo(istream& input) {
-  const vector<int> frequencyChanges = vector<int>(istream_iterator<int>(input), istream_iterator<int>());
+  const vector<int> frequencyChanges{istream_iterator<int>(input), istream_iterator<int>()};
   const int size = frequencyChanges.size();
   unordered_set<int> frequencies{0};
   int currentFrequency = 0;
